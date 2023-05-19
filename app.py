@@ -1,4 +1,5 @@
 import streamlit as st
+from PIL import Image
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,7 +36,9 @@ def project():
 
 def user_input():
     
-    st.header("Moon Phase & Zodiac Sign Trading Simulator")
+    image_header = Image.open('header.png')
+    st.image(image_header)
+    #st.header("Moon Phase & Zodiac Sign Trading Simulator")
     st.subheader(intro)
     st.write('DISCLAIMER: This is not financial advise. I am not a certified financial advisor. This is for research and curiosity purposes only.')
     st.components.v1.html(dashboard, width = 1000, height = 800)    
