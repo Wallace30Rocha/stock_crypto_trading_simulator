@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
@@ -25,16 +26,12 @@ tickers = ['AAPL', 'MSTF', 'AMZN', 'NVDA', 'GOOGL', 'BRK-B', 'META', 'XOM', 'TSL
     
 def project():
     user_input_data = user_input()
-    #user_input(user_input_data)
     final_investment_moon = moons(user_input_data)
     final_investment_zodiac = zodiac(user_input_data)
     final_investment_combo = combo(user_input_data)
-    buy_hold(user_input_data, final_investment_moon, final_investment_zodiac, final_investment_combo)
-    #moving_average(user_input_data)
-
+    buy_hold(user_input_data, final_investment_moon, final_investment_zodiac, final_investment_combo)    
     
 #----------------------------------------------------------------------------------------------------------------
-
 
 def user_input():
     
@@ -50,7 +47,7 @@ def user_input():
     
     #USER
     # Input the stock 
-    user_stock = st.selectbox('What stock would you like to simulate the trades? Please type the ticker: ', tickers)
+    user_stock = st.selectbox('What stock or crypto would you like to simulate the trades with? Please type the ticker: ', tickers)
     
     if user_stock == 'AAPL':
         user_stock = 'apple_all_columns.csv'
@@ -102,11 +99,9 @@ def user_input():
     # Read the stock data CSV file into a DataFrame
     stock_data = pd.read_csv(fr'stocks_all_columns_csv\{user_stock}')
     # Merge the two DataFrames on the 'date' column
-    merge_mz = pd.merge(stock_data, m_z, on='date')
-        
+    merge_mz = pd.merge(stock_data, m_z, on='date')        
 
 #-------------
-
 
     # Display asset lenght
     # Calculate the number of years between the dates
@@ -123,20 +118,10 @@ def user_input():
     mask_years = merge_mz['date'].str[: 4].astype(int) >= (merge_mz['date'].str[: 4].astype(int).max() - user_years)
     # Apply Mask
     years_df = merge_mz.loc[mask_years]
-    
-    #mask_years_60 = merge_mz['date'].str[: 4].astype(int) >= (merge_mz['date'].str[: 4].astype(int).max() - (user_years + 1))
-    # Apply Mask
-    #years_df_60 = merge_mz.loc[mask_years_60]
-    #mask_first_year = years_df_60['date'].str[: 4].astype(int) == years_df_60['date'].str[: 4].astype(int).min()
-    #mask_last_months = years_df_60['date'].str[5 : 7].astype(int).isin([11, 12])
-    #moving_average_df = years_df_60.loc[mask_first_year & mask_last_months]
-    #moving_average_df_final = pd.concat([moving_average_df, years_df])
        
     return years_df
 
-
 #----------------------------------------------------------------------------------------------------------------
-
 
 def moons(years_df):
     
@@ -264,10 +249,12 @@ def zodiac(years_df):
     fig_zodiac, ax_z = plt.subplots(figsize = (3, 2))
     custom_palette = ["black" if val > 0 else "grey" for val in mean_df_z['percent_change']]
     zodiac_chart = sns.barplot(data=mean_df_z, x='percent_change', y='zodiac', ax = ax_z, palette = custom_palette)
-    #fig_zodiac = zodiac_chart.get_figure()
-    st.pyplot(fig_zodiac)
+    ax_z.tick_params(axis='y', labelsize=4)
+    ax_z.tick_params(axis='x', labelsize=4)
+    plt.xlabel('Percent Change', fontsize = 4)
+    plt.ylabel('Zodiac', fontsize = 4)
+    st.pyplot(fig_zodiac, use_container_width = False)
     
-
 #--------------
 
     # Get the lowest moon phase value from 'merge_mz'
@@ -370,14 +357,25 @@ def combo(years_df):
     st.write('\nThese are the average daily performance of your stock during the combos of moon & zodiac (only displaying on the table the top three and worse three performers):')
     st.dataframe(data=filtered_mean_df_combo, use_container_width=False)
     # Create chart to display combo 
-    #fig_combo, ax_c = plt.subplots(8, 1)
-    #custom_palette = ["black" if val > 0 else "grey" for val in mean_df_combo['percent_change']]
+    #mean_df_combo['mask_combo'] = mean_df_combo['percent_change'] > 0
+    #custom_palette = {True: 'black', False: 'grey'}
+    #combo_chart = sns.catplot(data=mean_df_combo, x="percent_change", y="zodiac", row="moon_phase", kind="bar", aspect = 2, height=2, palette = custom_palette, hue = 'mask_combo')
+    #st.pyplot(combo_chart)
+      
+    # Create chart to display combo 
     mean_df_combo['mask_combo'] = mean_df_combo['percent_change'] > 0
     custom_palette = {True: 'black', False: 'grey'}
-    combo_chart = sns.catplot(data=mean_df_combo, x="percent_change", y="zodiac", row="moon_phase", kind="bar", aspect = 2, height=2, palette = custom_palette, hue = 'mask_combo')
-    #combo_chart = sns.barplot(data=mean_df_combo, x='percent_change', y='moon_phase', hue = 'zodiac', palette = custom_palette)
-    #fig_combo = combo_chart.get_figure()
-    st.pyplot(combo_chart)
+    sns.set(font_scale = 0.5)
+    fig_combo, ax_c = plt.subplots(figsize = (3, 2))
+    combo_chart = sns.catplot(data=mean_df_combo, x = "percent_change", y = "zodiac", row = "moon_phase", kind = "bar", aspect = 2, height = 2, palette = custom_palette, hue = 'mask_combo', ax = ax_c)
+    ax_c.tick_params(axis = 'both', labelsize = 4)
+    ax_c.set_xlabel('Percent Change', fontsize = 4)
+    ax_c.set_ylabel('Zodiac', fontsize = 4)
+    for ax_row in combo_chart.axes:
+        for ax_col in ax_row:
+            ax_col.title.set_fontsize(4)
+    combo_chart.fig.subplots_adjust(hspace = 0.5)
+    st.pyplot(combo_chart)    
     
 #--------------
 
@@ -458,33 +456,9 @@ def combo(years_df):
     unsafe_allow_html=True
     )
 
-    return final_investment_combo
-
-#----------------------------------------------------------------------------------------------------------------
-
-
-def moving_average(years_df):
-    
-    # Compute the moving average
-    window = 20 
-    years_df['Moving Average'] = years_df['close'].rolling(window).mean()
-    
-    fig, ax = plt.subplots()
-    ax.plot(years_df['date'], years_df['close'], label='Stock Price')
-    ax.plot(years_df['date'], years_df['Moving Average'], label=f'{window}-day Moving Average')
-    ax.set_xlabel('date')
-    ax.set_ylabel('price')
-    ax.set_title('Stock Chart with Moving Average')
-    ax.legend()
-    years_locator = mdates.YearLocator()
-    ax.xaxis.set_major_locator(years_locator)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-    plt.xticks(rotation=45)
-    st.pyplot(fig)
-    
+    return final_investment_combo   
     
 #----------------------------------------------------------------------------------------------------------------
-
 
 def buy_hold(years_df, final_investment_moon, final_investment_zodiac, final_investment_combo):
     
@@ -497,7 +471,7 @@ def buy_hold(years_df, final_investment_moon, final_investment_zodiac, final_inv
     buy_hold_combo = final_investment_combo / years_df.iloc[0, 2]
     sell_hold_combo = buy_hold_combo * years_df.iloc[-1, 5]
     
-    st.write('The box bellow is a simulation of how much money you have had if you just have invested the entire amount at once in the beginning of the timeframe that you chose and held the assets until selling them on the last day of the timeframe.') 
+    st.subheader('  \nThe box bellow is a simulation of how much money you have had if you just have invested the entire amount at once in the beginning of the timeframe that you chose and held the assets until selling them on the last day of the timeframe.  \n') 
     
     box_style = """
     padding: 10px;
@@ -510,14 +484,14 @@ def buy_hold(years_df, final_investment_moon, final_investment_zodiac, final_inv
     st.markdown(
     f'<div style="{box_style}">'
     '<h3 style="color: white;">Buy & Hold Comparison</h3>'
-    f'<p style="margin-bottom: 5px;">Instead of Moon trading, holding: ${sell_hold_moon:.2f}.</p>'
-    f'<p style="margin-bottom: 5px;">Instead of Zodiac trading, holding: ${sell_hold_zodiac:.2f}.</p>'
-    f'<p>Instead of Combination trading, holding: ${sell_hold_combo:.2f}.</p>'
+    f'<p style="margin-bottom: 5px;">Istead of trading by Moon Phases - Buying {final_investment_moon} worth of your choice of asset on {years_df.iloc[0, 0]} and selling on {years_df.iloc[-1, 0]} you would now have: ${sell_hold_moon:.2f}.</p>'
+    f'<p style="margin-bottom: 5px;">Istead of trading by Zodiac Signs - Buying {final_investment_zodiac} worth of your choice of asset on {years_df.iloc[0, 0]} and selling on {years_df.iloc[-1, 0]} you would now have: ${sell_hold_zodiac:.2f}.</p>'
+    f'<p>Istead of trading by Combination Moon & Zodiac - Buying {final_investment_combo} worth of your choice of asset on {years_df.iloc[0, 0]} and selling on {years_df.iloc[-1, 0]} you would now have: ${sell_hold_combo:.2f}.</p>'
     '</div>',
     unsafe_allow_html=True
     )
     
-    st.write('Thank you for using the simulator. There are definetely more analysis to be made as well as a need to a deeper undertanding in astrology in order to make more solid decisions abou this kind of trading strategy.')
+    st.write('  \nThank you for using the simulator. There are definetely more analysis to be made as well as a need to a deeper undertanding in astrology in order to make more solid decisions about this kind of trading strategy.')
     
     
 project()
