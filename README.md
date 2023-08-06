@@ -25,6 +25,7 @@ streamlit run app.py
 * Evaluate Results: Once the simulation is completed, evaluate the results and compare the performance of the trading strategy with the insights gained from the "SP500 Astrology" project.  
 
 # Methods  
+* Web Scraping
 * Filtering  
 * Grouping  
 * Querying  
