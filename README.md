@@ -3,7 +3,9 @@ Status (active)
 
 # Overview
 The Stock & Crypto Trading Simulator is a continuation of the successful project "SP500 Astrology," building upon the insights gained from identifying the most influential moon phases and zodiac signs affecting the SP500. 
+
 This simulator empowers users to select an asset from a curated list of the top 10 stocks or 4 oldest cryptocurrencies. 
+
 The primary objective of this project is to validate the trading strategy discovered in the previous research and assess its potential as a reliable approach to trading.  
 
 # Features
